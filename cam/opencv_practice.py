@@ -29,13 +29,29 @@ time.sleep(0.1)
 # cv2.waitKey(0)
 
 # capture frames from the camera
+# for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
+# 	# grab the raw numpy array representing the image
+# 	image = frame.array
+# 
+# 	# show the frame
+# 	cv2.imshow("Frame", image)
+# 	key = cv2.waitKey(1) 
+# 
+# 	# clear the stream
+# 	rawCapture.truncate(0)
+
+face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_alt.xml")
+
 for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
-	# grab the raw numpy array representing the image
 	image = frame.array
+	gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-	# show the frame
-	cv2.imshow("Frame", image)
-	key = cv2.waitKey(1) 
+	key = cv2.waitKey(1)
+	#faces = face_cascade.detectMultiScale(gray, 1.1, 5)
+	#print("Found " + str(len(faces)))
 
-	# clear the stream
+	#for (x, y, w, h) in faces:
+	#	cv2.rectangle(gray, (x,y), (x+w,y+h), (255, 0,0), 2)
+
+	cv2.imshow("Frame", gray)
 	rawCapture.truncate(0)
