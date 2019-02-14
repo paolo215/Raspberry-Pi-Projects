@@ -15,9 +15,10 @@ import cv2
 
 # set up
 resolution = (640, 480)
-camera = PiCamera()
-camera.resolution = resolution
-rawCapture = PiRGBArray(camera, size=resolution)
+#camera = PiCamera()
+#camera.resolution = resolution
+#rawCapture = PiRGBArray(camera, size=resolution)
+camera = cv2.VideoCapture(0)
 
 fourcc = cv2.cv.CV_FOURCC(*"XVID")
 out = cv2.VideoWriter("output.avi", fourcc, 20.0, resolution)
@@ -43,12 +44,14 @@ time.sleep(0.1)
 # 	# clear the stream
 # 	rawCapture.truncate(0)
 
-face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_alt.xml")
+#face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_alt.xml")
 
 try:
-	for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
-		image = frame.array
-		print(image)
+	#for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
+	while True:
+		ret, image = camera.read()
+		#image = frame.array
+		#print(image)
 		#gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
 		#faces = face_cascade.detectMultiScale(gray, 1.1, 5)
@@ -60,16 +63,15 @@ try:
 		out.write(image)
 		cv2.imshow("Frame", image)
 		cv2.waitKey(1) & 0xff
-		rawCapture.truncate(0)
 
-except Exception:
+except Exception as e:
+	print(e)
 	pass
 except KeyboardInterrupt:
 	pass
 
 
 cv2.destroyAllWindows()
-camera.close()
 out.release()
 print("closed")
 
