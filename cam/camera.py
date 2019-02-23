@@ -11,38 +11,37 @@ class Camera(ABC):
 
     @abstractmethod
     def set_resolution(self, resolution):
-        pass
+        raise NotImplementedError("")
 
     @abstractmethod
     def record(self, seconds):
-        pass
+        raise NotImplementedError("")
 
     @abstractmethod
     def record_continuous_save_every(self, seconds):
-
-        pass
+        raise NotImplementedError("")
 
     @abstractmethod
     def stop(self):
-        pass
+        raise NotImplementedError("")
 
     @abstractmethod
     def take_picture(self):
-        pass
+        raise NotImplementedError("")
 
     @abstractmethod
     def take_picture_every(self, seconds):
-        pass
+        raise NotImplementedError("")
 
-    def generate_filename(self, extension):
+    def generate_filename(self, extension, sub_folder="misc/"):
         now = datetime.datetime.now()
-        now_full_str = now.strftime("%m-%d-%Y %H:%M")
+        now_full_str = now.strftime("%m-%d-%Y_%H:%M:%S")
         now_date_str = now.strftime("%m-%d-%Y")
-        folder_path = "./%s/%s" % (self.prefix, now_date_str)
+        folder_path = "./%s/%s/%s" % (self.prefix, now_date_str, sub_folder)
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
 
-        file_path = folder_path + "/" + now_date_str + "." + extension
+        file_path = folder_path + "/" + now_full_str + "." + extension
         return file_path
 
 
