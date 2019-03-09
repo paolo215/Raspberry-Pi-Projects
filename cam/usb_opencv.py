@@ -10,7 +10,7 @@ from queue import Queue
 from threading import Thread
 
 class USB_OpenCV(Camera):
-    def __init__(self, prefix, resolution, stream=False):
+    def __init__(self, prefix, resolution):
         super().__init__(prefix, resolution)
         self.camera = cv2.VideoCapture(0)
         self.set_resolution(self.resolution)
@@ -64,12 +64,12 @@ class USB_OpenCV(Camera):
             start = time.time()
             filename = self.generate_filename("avi", "video")
             print(filename)
-            self.writer = self.createVideoWriter(filename)
-            while time.time() - start < seconds \
-                and self.camera.isOpened():
-                image = self.current_frame
-                if image != None:
-                    self.show_frame(image)
+            if self.camera.isOpened():
+                self.writer = self.createVideoWriter(filename)
+                while time.time() - start < seconds:
+                    image = self.current_frame
+                    if image != None:
+                        self.show_frame(image)
         except KeyboardInterrupt:
             self.stop()
 
@@ -80,7 +80,11 @@ class USB_OpenCV(Camera):
     def record_continuous_save_every(self, seconds):
         try:
             while True:
-                self.record(seconds)
+                if self.camera.isOpened():
+                    self.record(seconds)
+                else:
+                    print("Camera is closed")
+                    self.stop()
         except KeyboardInterrupt:
             self.stop()
 
@@ -120,6 +124,10 @@ class USB_OpenCV(Camera):
     def createVideoWriter(self, filename):
         return cv2.VideoWriter(filename, self.fourcc, 30.0, self.resolution)
 
+    def isOpened(self):
+        if self.camera:
+            return self.camera.isOpened()
+        return False
 
 if __name__ == "__main__":
     a = USB_OpenCV("test", (640, 480)) 
