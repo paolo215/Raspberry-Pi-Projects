@@ -8,6 +8,7 @@ from camera import Camera
 from picamera.array import PiRGBArray
 from picamera import PiCamera
 from fractions import Fraction
+from threading import Thread
 
 # Raspberry Pi Camera Module With IR
 class RaspberryPiCamera(Camera):
@@ -15,28 +16,34 @@ class RaspberryPiCamera(Camera):
         super().__init__(prefix, resolution)
         self.camera = PiCamera()
         self.set_resolution(self.resolution) 
+        self.raw_capture = PiRGBArray(self.camera, size=resolution)
+        self.fourcc = cv2.VideoWriter_fourcc(*"XVID")
+        self.writer = cv2.VideoWriter("output.avi", self.fourcc, 20.0, resolution)
 
     def set_resolution(self, resolution):
         self.camera.resolution = resolution
     
+    def get_frame(self):
+        self.camera.capture(self.raw_capture, format="bgr")
+        frame = self.raw_capture.array
+        self.raw_capture.truncate(0)
+        return frame
+
+    def collect_frames(self):
+        while True:
+            self.current_frame = self.get_frame()
+
+
     def record(self, seconds):
         try:
-            filename = self.generate_filename("h264", "videos")
-            self.camera.start_preview()
-            self.camera.start_recording(filename)
-            self.camera.wait_recording(seconds)
-            self.camera.stop_recording()
-            self.camera.stop_preview()
-            return filename
-        except KeyboardInterrupt:
-            print("Keyboard Interrupt - Closing Camera")
-            self.stop()
+            start = time.time()
+            filename = self.generate_filename("avi", "video")
+            print(filename)
+            while time.time() - start < seconds:
+                image = self.current_frame
+                if image is not None:
+                    self.show_frame(image)
 
-    def record_continuous_save_every(self, seconds):
-        try:
-            while True:
-                filename = self.record(seconds)
-                print(filename) 
         except KeyboardInterrupt:
             print("Keyboard Interrupt - Closing Camera")
             self.stop()
@@ -56,6 +63,10 @@ class RaspberryPiCamera(Camera):
             print("Keyboard Interrupt. Closing Camera.")
             self.stop()
 
+    def show_frame(self, image):
+        cv2.imshow("Frame", image)
+        cv2.waitKey(1)
+
     def take_picture_every(self, seconds):
         try:
             while True:
@@ -66,9 +77,14 @@ class RaspberryPiCamera(Camera):
             print("KeyboardInterrupt - Closing Camera")
             self.stop()
 
+    def isOpened(self):
+        if self.camera:
+            return not self.camera.closed
+        return False
+
 if __name__ == "__main__":
     a = RaspberryPiCamera("test", (640, 480))
     #a.take_picture_every(10)
-    a.record_continuous_save_every(10)
+    a.start_record(10)
 
 
