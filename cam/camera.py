@@ -1,13 +1,16 @@
 import os
 import datetime
+import cv2
 
 from abc import ABC
 from abc import abstractmethod
+from threading import Thread
 
 class Camera(ABC):
     def __init__(self, prefix, resolution):
         self.prefix = prefix
         self.resolution = resolution
+        self.current_frame = None
 
     @abstractmethod
     def set_resolution(self, resolution):
@@ -17,9 +20,13 @@ class Camera(ABC):
     def record(self, seconds):
         raise NotImplementedError("")
 
-    @abstractmethod
     def record_continuous_save_every(self, seconds):
-        raise NotImplementedError("")
+        try:
+            while True:
+                if self.isOpened():
+                    self.record(seconds)
+        except KeyboardInterrupt:
+            self.stop()
 
     @abstractmethod
     def stop(self):
@@ -33,6 +40,31 @@ class Camera(ABC):
     def take_picture_every(self, seconds):
         raise NotImplementedError("")
 
+    @abstractmethod
+    def get_frame(self):
+        raise NotImplementedError("")
+    
+    @abstractmethod
+    def collect_frames(self):
+        raise NotImplementedError("")
+    
+    @abstractmethod
+    def isOpened(self):
+        raise NotImplementedError("")
+
+    def start_record(self, seconds):
+        t1 = Thread(target=self.collect_frames)
+        t2 = Thread(target=self.record_continuous_save_every, args=(seconds, ))
+        threads = [t1, t2]
+
+        for t in threads:
+            t.daemon = True
+            t.start()
+
+        for t in threads:
+            t.join()
+
+
     def generate_filename(self, extension, sub_folder="misc/"):
         now = datetime.datetime.now()
         now_full_str = now.strftime("%m-%d-%Y_%H:%M:%S")
@@ -44,6 +76,9 @@ class Camera(ABC):
         file_path = folder_path + "/" + now_full_str + "." + extension
         return file_path
 
+    def show_frame(self, image):
+        cv2.imshow("Frame", image)
+        cv2.waitKey(1)
 
 
         

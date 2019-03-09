@@ -17,9 +17,6 @@ class USB_OpenCV(Camera):
         self.fourcc = cv2.VideoWriter_fourcc(*"MPEG")
         self.writer = None
 
-        # Only for recording videos
-        self.current_frame = None
-
     def set_resolution(self, resolution):
         # Reference:
         # https://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html#videocapture-set
@@ -39,25 +36,9 @@ class USB_OpenCV(Camera):
             if return_value:
                 self.current_frame = frame
 
-    def show_frame(self, image):
-        cv2.imshow("Frame", image)
-        cv2.waitKey(1)
-        
     def write_frame(self, writer, image):
         self.writer.write(image)
         
-    def start_record(self, seconds):
-        t1 = Thread(target=self.collect_frames)
-        t2 = Thread(target=self.record_continuous_save_every, args=(seconds,))
-        threads = [t1, t2]
-
-        for t in threads:
-            t.daemon = True
-            t.start()
-        
-        for t in threads:
-            t.join()
-
 
     def record(self, seconds):
         try:
@@ -75,19 +56,6 @@ class USB_OpenCV(Camera):
 
         print("END")
         return None
-
-
-    def record_continuous_save_every(self, seconds):
-        try:
-            while True:
-                if self.camera.isOpened():
-                    self.record(seconds)
-                else:
-                    print("Camera is closed")
-                    self.stop()
-        except KeyboardInterrupt:
-            self.stop()
-
 
     def stop(self):
         self.camera.release()
