@@ -36,9 +36,14 @@ class Camera(ABC):
     def take_picture(self):
         raise NotImplementedError("")
 
-    @abstractmethod
     def take_picture_every(self, seconds):
-        raise NotImplementedError("")
+        try:
+            while True:
+                start = time.time()
+                while time.time() - start and self.isOpened():
+                    self.take_picture()
+        except KeyboardInterrupt:
+            self.stop()
 
     @abstractmethod
     def get_frame(self):

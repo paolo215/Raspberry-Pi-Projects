@@ -63,20 +63,6 @@ class RaspberryPiCamera(Camera):
             print("Keyboard Interrupt. Closing Camera.")
             self.stop()
 
-    def show_frame(self, image):
-        cv2.imshow("Frame", image)
-        cv2.waitKey(1)
-
-    def take_picture_every(self, seconds):
-        try:
-            while True:
-                filename = self.take_picture()
-                time.sleep(seconds)
-                print(filename) 
-        except KeyboardInterrupt:
-            print("KeyboardInterrupt - Closing Camera")
-            self.stop()
-
     def isOpened(self):
         if self.camera:
             return not self.camera.closed

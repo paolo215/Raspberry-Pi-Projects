@@ -38,7 +38,6 @@ class USB_OpenCV(Camera):
 
     def write_frame(self, writer, image):
         self.writer.write(image)
-        
 
     def record(self, seconds):
         try:
@@ -78,16 +77,6 @@ class USB_OpenCV(Camera):
         except KeyboardInterrupt:
             self.stop()
         return None 
-
-    def take_picture_every(self, seconds):
-        try:
-            while True:
-                start = time.time()
-                while time.time() - start and \
-                    self.camera.isOpened():
-                    self.take_picture()
-        except KeyboardInterrupt:
-            self.stop()
 
     def createVideoWriter(self, filename):
         return cv2.VideoWriter(filename, self.fourcc, 30.0, self.resolution)
